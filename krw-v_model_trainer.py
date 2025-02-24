@@ -714,7 +714,7 @@ else:
     st.write("Geen data beschikbaar")
 
 
-@st.cache_data
+@st.cache_data(ttl=600, max_entries=50)  # Cache expires after 10 minutes, keeps last 50 results
 def get_parallel_coordinates(df, target):
     data_hip = df.copy()
     data_hip = data_hip.drop(columns=['KRW type', 'Waterschap naam', 'OWL naam'], errors='ignore')
@@ -986,7 +986,6 @@ if st.session_state.fit_model:
             shap_explainer = shap.Explainer(model.named_steps['model'])
         except:
             standard_explainer = False
-        # print(standard_explainer)
         # Estimate SHAP values
         if standard_explainer:
             shap_explainer = shap.Explainer(model.named_steps['model'])
@@ -1055,7 +1054,8 @@ if st.session_state.fit_model:
         # model outputs for tick labels, and XGBoost's default 'float32 format causes incorrect ticklabels, 
         # leading Matplotlib to incorrectly display "$f(x)$" as f"$ = {fx_value}$". Converting everything to 
         # 'float64' ensures consistent behavior across all models. Occurs in SHAP.__version__ > '0.46.0'
-        if mdl_type.lower() == 'xgb':
+        if type(explanation['explained_value'].base_values) == np.float32:
+        # if mdl_type.lower() == 'xgb':
             explanation['explained_value'].base_values = np.float64(explanation['explained_value'].base_values)
             explanation['explained_value'].values = explanation['explained_value'].values.astype(np.float64)
         st.session_state.explanation = explanation
@@ -1112,7 +1112,7 @@ if st.session_state.fit_model:
             'winkler_score':float(np.round(MWIS_metric.score(y_test.to_numpy(), y_pis[:, 0, 0], y_pis[:, 1, 0], alpha=alpha)[0], digits)),
             'cwc_score':float(np.round(coverage_width_based(y_test.to_numpy(), y_pis[:, 0, 0], y_pis[:, 1, 0], eta=10, alpha=alpha), digits)),
         }
-        print(conformal_metrics)
+        # print(conformal_metrics)
 
 
         # Causal discovery using DirectLiNGAM
