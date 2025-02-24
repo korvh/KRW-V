@@ -175,9 +175,9 @@ ordinal_columns = ['Meandering','Beschaduwing','Verstuwing','Onderhoud','Peilbeh
 columns_not_in_model = []
 categorical_columns = ['Profielvorm','Vispasseerbaarheid','Ruimtelijke variatie stroomsnelheid']
 ohe_drop_first = True
+categorical_encode_method = 'CatBoost'
 # categorical_encode_method = 'OHE'
 # categorical_encode_method = 'GLMM'
-categorical_encode_method = 'CatBoost'
 # categorical_encode_method = 'JamesStein'
 # categorical_encode_method = 'Target'
 
@@ -208,8 +208,8 @@ continuous_to_ordinal_transform_nbins = {}
 # split_method = 'random'
 split_method = 'stratified'
 
-# scaler_type = 'standard'
-scaler_type = 'minmax'
+scaler_type = 'standard'
+# scaler_type = 'minmax'
 # scaler_type = 'none'
 
 model_types = {
@@ -225,18 +225,18 @@ models = {
     "RF": {'model':RandomForestRegressor(n_estimators=30, max_depth=10, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Random Forest Regressor'},
     "LGBM": {'model':LGBMRegressor(objective='regression', max_depth=10, verbose=-1), 'scaler':scaler_type, 'name':'Gradient Boosting Regressor'},	
     "XGB": {'model':XGBRegressor(objective='reg:squarederror', max_depth=10, min_child_weight=20), 'scaler':scaler_type, 'name':'XGBoost Regressor'},
-    "LR": {'model':LinearRegression(), 'scaler':'standard', 'name':'Linear Regression'},
     "XT": {'model':ExtraTreesRegressor(n_estimators=30, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Extra Trees Regressor'},
     "KNN": {'model':KNeighborsRegressor(), 'scaler':'standard', 'name':'K-nearest Neighbors Regressor'},
+    "LR": {'model':LinearRegression(), 'scaler':'standard', 'name':'Linear Regression'},
 }
 
 cqr_models = {
     "RF": {'model':RandomForestQuantileRegressor(n_estimators=30, max_depth=10, min_samples_leaf=3, q=0.5), 'scaler':scaler_type, 'name':'Random Forest Quantile Regressor'},
     "LGBM": {'model':LGBMRegressor(objective='quantile', max_depth=10,  alpha=0.5, verbose=-1), 'scaler':scaler_type, 'name':'Gradient Boosting Quantile Regressor'},
     "XGB": {'model':XGBRegressor(objective='reg:quantileerror', max_depth=10, min_child_weight=20, quantile_alpha=0.5), 'scaler':scaler_type, 'name':'XGBoost Quantile Regressor'},
-    "LR": {'model':QuantileRegressor(alpha=1., quantile=0.5), 'scaler':'standard', 'name':'Linear Quantile Regressor'},
     "XT": {'model':ExtraTreesQuantileRegressor(n_estimators=30, min_samples_leaf=3, q=0.5), 'scaler':scaler_type, 'name':'Extra Trees Quantile Regressor'},
     "KNN": {'model':KNeighborsQuantileRegressor(q=0.5), 'scaler':'standard', 'name':'K-nearest Neighbors Quantile Regressor'},
+    "LR": {'model':QuantileRegressor(alpha=1., quantile=0.5), 'scaler':'standard', 'name':'Linear Quantile Regressor'},
 }
 
 
@@ -531,20 +531,17 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.sidebar.image(logo, use_container_width=True)  # Display logo in sidebar
-# st.sidebar.markdown("<br>", unsafe_allow_html=True)  # Add vertical space
 st.sidebar.title('KRW-Verkenner Regionaal')  # Add title for sidebar
 # Dropdown for Cluster Type selection
 cluster_name = st.sidebar.selectbox(
     "KRW Cluster",
     cluster_types,
-    # index=cluster_types.index(st.session_state.cluster_name),
     help="Kies het gewenste clustertype uit de beschikbare opties."
 )
 # Dropdown for EKR Type selection
 target_name = st.sidebar.selectbox(
     "EKR Score",
     krw_types,
-    # index=krw_types.index(st.session_state.target_name),
     help="Kies de gewenste KRW indicator uit de beschikbare opties."
 )
 # Radio button for Data Type selection form dataset
@@ -564,7 +561,6 @@ show_hiplot = st.sidebar.checkbox(
 model_name = st.sidebar.selectbox(
     "Model Type",
     list(model_types.keys()),
-    # index=list(model_types.keys()).index(st.session_state.model_name),
     help="Kies het gewenste type ML model uit de beschikbare opties."
 )
 # Slider for Prediction Interval
@@ -691,9 +687,6 @@ else:
         st.session_state.dataset_selected = df.copy()
         st.session_state.new_dataset = True
         st.session_state.start_select_features = True
-
-# print(f"New dataset: {st.session_state.new_dataset}")
-# print(f"New settings: {st.session_state.new_settings}")
 
 # Reset session state of tables and figures, if new dataset is selected or settings are changed
 if (st.session_state.new_dataset) | (st.session_state.new_settings):
@@ -922,9 +915,6 @@ if st.session_state.fit_model:
         rgr_mdl.set_params(seed_value=seed_value)
     model = regression_model_pipeline()
     
-    # print(model.named_steps['preprocessor'])
-    # print(model.named_steps['model'])
-    
     # Initialize quantile model
     set_monotonic_constraints = False
     rgr_mdl = copy.deepcopy(cqr_models[mdl_type].get('model'))
@@ -943,8 +933,6 @@ if st.session_state.fit_model:
     with st.spinner('Training model...'):
         # Train model
         model.fit(X_train, y_train)
-
-        # print(f"{model_name} is fitted: {check_is_fitted(model)}")
 
         # Get metrics
         predict_train = model.predict(X_train)
@@ -1233,14 +1221,6 @@ if st.session_state.fit_model:
 # Re-render all tables and figures
 if st.session_state.render_figures:
     with st.spinner('Rendering figures...'):
-        # # Add metadata table to session state
-        # st.session_state.table_metadata = (
-        #     metadata_df.loc[
-        #         ((metadata_df['Clustertype'].apply(lambda x: cluster_name in x)) & (metadata_df['Stuurvariabele'].isin(df.columns))), 
-        #         ['Deelvariabele','Omschrijving']
-        #     ].rename(columns={'Deelvariabele':'Stuurvariabele'}).set_index('Stuurvariabele')
-        # )
-        
         # Add metrics table to session state
         st.session_state.table_metrics = df_metrics.transpose()
 
@@ -1423,17 +1403,6 @@ if st.session_state.table_metrics is not None:
     st.write("")
     st.write("")
     st.write("### Model Prestaties")
-    # metrics_explain = {
-    #     'RMSE': 'Root Mean Squared Error',
-    #     'MAE': 'Mean Absolute Error',
-    #     'CCC': 'Concordance-Correlation Coefficient',
-    #     'R2': 'R-squared',
-    #     '+/-0.1': 'Binnen bandbreedte van +/-0.1 t.o.v. waarde',
-    # }
-    # annotations = []
-    # for key in df_metrics.index:
-    #     if key in metrics_explain:
-    #         annotations.append(f"{key}:&nbsp;&nbsp;{metrics_explain[key]}")
     st.markdown(
         "<p style='font-size:14px;'><b>RMSE (Root Mean Squared Error):</b> De gemiddelde grootte van de kwadratische fouten. Grotere fouten werken harder door in het gemiddelde doordat ze gekwadrateerd worden. Een lagere waarde betekent een betere nauwkeurigheid. </p>",
         unsafe_allow_html=True
@@ -1561,8 +1530,3 @@ if st.session_state.fig_causal is not None:
         unsafe_allow_html=True
     )
     st.pyplot(st.session_state.fig_causal)
-
-# # Reset session state
-# st.session_state.render_figures = False
-
-# print('Done')
