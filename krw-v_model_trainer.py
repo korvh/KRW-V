@@ -79,6 +79,8 @@ xgb.set_config(verbosity=0)  # 0 = Silent, 1 = Warning, 2 = Info, 3 = Debug
 # Set the page layout
 st.set_page_config(layout="wide", page_title="KRW-Verkenner Model Trainer", page_icon=":bar_chart:")
 
+# Set Graphviz path manually
+os.environ["PATH"] += os.pathsep + "/home/adminuser/venv/bin/"
 
 # Define paths
 path_data = os.getcwd()
