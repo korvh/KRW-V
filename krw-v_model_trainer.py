@@ -37,7 +37,6 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.patches as mpatches
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
 import hiplot as hip
 import numpy as np
