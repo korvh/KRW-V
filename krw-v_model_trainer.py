@@ -1333,7 +1333,7 @@ if st.session_state.render_figures:
             label=f"{conformal_interval}% Interval", zorder=0
         )
         # Update axis
-        ax.set_ylabel(f"EKR {target_name.title()}", fontsize=label_fontsize)
+        ax.set_ylabel(f"EKR {target_name.title()}", fontsize=label_fontsize*0.8)
         xlims = ax.get_xlim()
         ax.set_xticks(ax.get_xticks())
         ax.set_xticklabels([])
