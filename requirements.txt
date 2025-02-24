@@ -69,7 +69,7 @@ pure-eval
 pyarrow==19.0.0
 pycparser
 pydeck
-pydot
+pydotplus
 Pygments
 pyparsing
 PySide6==6.8.1
