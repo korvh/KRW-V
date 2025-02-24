@@ -214,7 +214,7 @@ scaler_type = 'standard'
 model_types = {
     'Random Forest':'RF',
     'LGBM - Gradient Boosting':'LGBM',
-    'XGB - Gradient Boosting':'XGB',
+    # 'XGB - Gradient Boosting':'XGB',
     'Extra Trees':'XT',
     'K-nearest Neighbors':'KNN'
     # 'Linear Regression':'LR',
