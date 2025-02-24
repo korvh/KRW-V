@@ -96,7 +96,6 @@ statsmodels
 streamlit
 tenacity
 threadpoolctl
-tk
 toml
 tornado
 tqdm
