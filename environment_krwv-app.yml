@@ -28,4 +28,4 @@ dependencies:
   - tk
   - pip
   - pip:
-      - git+https://github.com/deanbodenham/momentchi2py.git  # otherwise version error (2025/02/03)
+      - git+https://github.com/deanbodenham/momentchi2py.git  # dependency of causl-learn; otherwise version error (2025/02/03)
