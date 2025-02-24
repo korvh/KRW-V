@@ -52,7 +52,7 @@ from causallearn.graph.GeneralGraph import GeneralGraph
 from causallearn.graph.GraphNode import GraphNode
 from causallearn.utils.GraphUtils import GraphUtils
 import networkx as nx
-import pydot
+import pydotplus as pydot
 import io
 import os
 from openpyxl import load_workbook
