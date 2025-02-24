@@ -83,7 +83,9 @@ st.set_page_config(layout="wide", page_title="KRW-Verkenner Model Trainer", page
 
 
 # Define paths
-path_data = os.getcwd()    
+path_data = os.getcwd()
+path_data = os.path.join(path_data, 'data')
+
 files_data = {
     'Geaggregeerd':'1-s2.0-S0043135421010459-mmc3_clean.xlsx',
     'Gedetailleerd':'Volledige_dataset_versie4_MetLengte_clean.xlsx'
