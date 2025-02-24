@@ -52,7 +52,6 @@ from causallearn.graph.GeneralGraph import GeneralGraph
 from causallearn.graph.GraphNode import GraphNode
 from causallearn.utils.GraphUtils import GraphUtils
 import networkx as nx
-import pydotplus as pydot
 import io
 import os
 from openpyxl import load_workbook
@@ -1349,42 +1348,42 @@ if st.session_state.render_figures:
         # Add conformal result to session state
         st.session_state.fig_intervals = fig
 
-        # Plot causal graph
-        fig, ax = plt.subplots(figsize=(12,6), ncols=2)
-        ax[0] = plot_causal_graph(
-            G_fci, 
-            node_names=node_names, 
-            ax=ax[0],
-            ci_type='fci',
-            color_direction=False, 
-            show_edge_width=False,
-            max_line_width=5,
-            pyd_layout='dot',
-            title="Fast Causal Inference (FCI)",
-            fontsize=11,
-            bbox_to_anchor=(1.,1.),
-        )
-        if G_dling.number_of_edges() > 0:
-            ax[1] = plot_causal_graph(
-                G_dling, 
-                node_names=node_names,
-                ax=ax[1],
-                ci_type='directlingam',
-                adj_matrix=adjmatrix_dling,
-                color_direction=True, 
-                show_edge_width=True,
-                max_line_width=5,
-                pyd_layout='dot',
-                title="DirectLiNGAM",
-                fontsize=11,
-                bbox_to_anchor=(1.,1.),
-            )
-        else:
-            st.write("No causal links detected with DirectLiNGAM")
-        ax[0].axis('off')
-        ax[1].axis('off')
-        # Add causal graphs to session state
-        st.session_state.fig_causal = fig
+        # # Plot causal graph
+        # fig, ax = plt.subplots(figsize=(12,6), ncols=2)
+        # ax[0] = plot_causal_graph(
+        #     G_fci, 
+        #     node_names=node_names, 
+        #     ax=ax[0],
+        #     ci_type='fci',
+        #     color_direction=False, 
+        #     show_edge_width=False,
+        #     max_line_width=5,
+        #     pyd_layout='dot',
+        #     title="Fast Causal Inference (FCI)",
+        #     fontsize=11,
+        #     bbox_to_anchor=(1.,1.),
+        # )
+        # if G_dling.number_of_edges() > 0:
+        #     ax[1] = plot_causal_graph(
+        #         G_dling, 
+        #         node_names=node_names,
+        #         ax=ax[1],
+        #         ci_type='directlingam',
+        #         adj_matrix=adjmatrix_dling,
+        #         color_direction=True, 
+        #         show_edge_width=True,
+        #         max_line_width=5,
+        #         pyd_layout='dot',
+        #         title="DirectLiNGAM",
+        #         fontsize=11,
+        #         bbox_to_anchor=(1.,1.),
+        #     )
+        # else:
+        #     st.write("No causal links detected with DirectLiNGAM")
+        # ax[0].axis('off')
+        # ax[1].axis('off')
+        # # Add causal graphs to session state
+        # st.session_state.fig_causal = fig
         
         # Reset session state
         st.session_state.render_figures = False

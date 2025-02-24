@@ -6,6 +6,7 @@ from causallearn.graph.GeneralGraph import GeneralGraph
 from causallearn.graph.GraphNode import GraphNode
 from causallearn.utils.GraphUtils import GraphUtils
 import networkx as nx
+import graphviz
 import pydot
 import io
 import numpy as np
