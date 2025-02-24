@@ -178,7 +178,6 @@ ohe_drop_first = True
 categorical_encode_method = 'CatBoost'
 # categorical_encode_method = 'OHE'
 # categorical_encode_method = 'GLMM'
-# categorical_encode_method = 'JamesStein'
 # categorical_encode_method = 'Target'
 
 use_categorical_encoding = True
