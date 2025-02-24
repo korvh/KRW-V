@@ -31,7 +31,6 @@ from sklearn.inspection import permutation_importance
 from sklearn.decomposition import PCA
 import shap
 from mapie.regression import MapieQuantileRegressor
-# from mapie.mondrian import MondrianCP
 from mapie.metrics import coverage_width_based, regression_coverage_score, regression_mean_width_score, regression_mwi_score
 import MWIS_metric
 import matplotlib.pyplot as plt
