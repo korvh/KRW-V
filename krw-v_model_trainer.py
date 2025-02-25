@@ -747,7 +747,10 @@ if len(df) > 0:
         # Render interactive parallel coordinates plot
         xp = get_parallel_coordinates(df, target=target_name)
         # Instead of calling directly '.display()' convert it to a streamlit component with '.to_streamlit()' before
-        xp.to_streamlit(key="hipl", ret=None).display();
+        # xp.to_streamlit(key="hipl", ret=None).display();
+        # Alternative rendering via HTML by-passing JavaScript errors in Streamlit Cloud
+        st.components.v1.html(xp.to_html(), height=600)
+
 
 
 # Display metadata of features
