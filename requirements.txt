@@ -26,7 +26,7 @@ gitdb
 GitPython
 graphviz
 h2
-hiplot @ git+https://github.com/Gizzio/hiplot.git@main
+hiplot
 hpack
 hyperframe
 idna
@@ -93,7 +93,7 @@ smmap
 soupsieve
 stack-data
 statsmodels
-streamlit
+streamlit==1.13.0
 tenacity
 threadpoolctl
 toml
