@@ -93,7 +93,7 @@ smmap
 soupsieve
 stack-data
 statsmodels
-streamlit==1.13.0
+streamlit
 tenacity
 threadpoolctl
 toml
