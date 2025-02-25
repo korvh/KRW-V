@@ -24,7 +24,7 @@ Flask-Compress
 fonttools
 gitdb
 GitPython
-pygraphviz
+graphviz
 h2
 hiplot @ git+https://github.com/Gizzio/hiplot@main
 hpack
