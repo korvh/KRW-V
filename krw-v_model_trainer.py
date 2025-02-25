@@ -552,11 +552,11 @@ data_type = st.sidebar.radio(
     help="Kies tussen gebruik van geaggregeerde of gedetailleerde stuurvariabelen in het model."
 )
 # Checkbox for Showing HiPlot
-# show_hiplot = False
-show_hiplot = st.sidebar.checkbox(
-    "Interactieve Visualisatie van Dataset", 
-    value=False
-)
+show_hiplot = False
+# show_hiplot = st.sidebar.checkbox(
+#     "Interactieve Visualisatie van Dataset", 
+#     value=False
+# )
 # Dropdown for Model selection
 model_name = st.sidebar.selectbox(
     "Model Type",
