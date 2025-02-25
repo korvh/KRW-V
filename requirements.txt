@@ -24,9 +24,9 @@ Flask-Compress
 fonttools
 gitdb
 GitPython
-graphviz
+pygraphviz
 h2
-hiplot
+hiplot @ git+https://github.com/Gizzio/hiplot@main
 hpack
 hyperframe
 idna
@@ -69,7 +69,7 @@ pure-eval
 pyarrow==19.0.0
 pycparser
 pydeck
-pydotplus
+pydot
 Pygments
 pyparsing
 PySide6==6.8.1
