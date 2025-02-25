@@ -26,7 +26,7 @@ gitdb
 GitPython
 graphviz
 h2
-hiplot
+git+https://github.com/Gizzio/hiplot.git@main#egg=hiplot
 hpack
 hyperframe
 idna
@@ -49,7 +49,7 @@ MarkupSafe
 matplotlib==3.9.4
 matplotlib-inline
 mdurl
-momentchi2 @ git+https://github.com/deanbodenham/momentchi2py.git
+git+https://github.com/deanbodenham/momentchi2py.git#egg=momentchi2
 munkres==1.1.4
 narwhals
 networkx
@@ -93,7 +93,7 @@ smmap
 soupsieve
 stack-data
 statsmodels
-streamlit
+streamlit>=1.14.0
 tenacity
 threadpoolctl
 toml
