@@ -749,7 +749,7 @@ if len(df) > 0:
         # Instead of calling directly '.display()' convert it to a streamlit component with '.to_streamlit()' before
         # xp.to_streamlit(key="hipl", ret=None).display();
         # Alternative rendering via HTML by-passing JavaScript errors in Streamlit Cloud
-        st.components.v1.html(xp.to_html(), height=600)
+        st.components.v1.html(xp.to_html(), height=800, scrolling=True)
 
 
 
