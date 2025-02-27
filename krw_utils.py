@@ -24,6 +24,8 @@ from scipy.stats import yeojohnson, boxcox
 from openpyxl import load_workbook
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import mean_squared_error, mean_absolute_error, make_scorer, r2_score
+from scipy.stats import pointbiserialr
+from scipy.stats import chi2_contingency
 
 
 # Function to load all data into a single dataframe
@@ -787,3 +789,211 @@ def initialize_graph_for_background_knowledge(data, forbidden_links=None, requir
     for from_var, to_var in required_links:
         bk.add_required_by_node(nodes[name_to_index[from_var]], nodes[name_to_index[to_var]])
     return bk
+
+
+# Function to plot correlation heatmap
+def plot_correlation_heatmap(corr_mat, cmap="RdYlBu", cbar_title="Correlation", alpha=0.8, edge_width=0.5):
+    corr_mat = corr_mat.fillna(0)
+
+    # Set diagonal to NaN
+    np.fill_diagonal(corr_mat.values, np.nan)
+
+    # Create mask for upper triangle
+    mask = np.tril(np.ones_like(corr_mat, dtype=bool))
+
+    # Convert correlation matrix to long format
+    corr_long = corr_mat.where(mask).stack().reset_index()
+    corr_long.columns = ["Feature 1", "Feature 2", "Correlation"]
+
+    # Map feature names to numeric indices
+    feature_to_index = {name: idx for idx, name in enumerate(corr_mat.columns)}
+    corr_long["X"] = corr_long["Feature 2"].map(feature_to_index)
+    corr_long["Y"] = corr_long["Feature 1"].map(feature_to_index)
+
+    # Scale square sizes based on absolute correlation
+    corr_long["Size"] = np.abs(corr_long["Correlation"]) * 0.98  # Adjust scale factor for proper fit
+
+    # Create figure
+    fig, axes = plt.subplots(figsize=(16, 5.7), ncols=2, dpi=150)
+    
+    # Define colormap
+    cmap = plt.get_cmap(cmap)
+
+    # Plot scaled squares and reference outlines
+    ax = axes[0]
+    for _, row in corr_long.iterrows():
+        x, y, size, value = row["X"], row["Y"], row["Size"], row["Correlation"]
+        color = cmap((value + 1) / 2)  # Normalize correlation values (-1 to 1) for colormap
+
+        # Plot main correlation square
+        rect = plt.Rectangle((x - size / 2, y - size / 2), size, size, 
+                             facecolor=color, edgecolor="dimgray", linewidth=edge_width, alpha=alpha, zorder=10)
+        ax.add_patch(rect)
+
+        # Plot reference square for |r| = 1
+        max_size = 1  # The size corresponding to |r| = 1
+        outline = plt.Rectangle((x - max_size / 2, y - max_size / 2), max_size, max_size, 
+                                facecolor="none", edgecolor="dimgray", linewidth=edge_width, zorder=0)
+        ax.add_patch(outline)
+
+    # Set labels
+    ax.set_xticks(range(len(corr_mat.columns)))
+    ax.set_yticks(range(len(corr_mat.columns)))
+    ax.set_xticklabels(corr_mat.columns, rotation=40, ha='right')
+    ax.set_yticklabels(corr_mat.columns)
+
+    # Add colorbar
+    cbar_kwargs = {
+        'shrink': 0.8,
+        'alpha': alpha,
+    }
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=-1, vmax=1))
+    cbar = plt.colorbar(sm, **cbar_kwargs, ax=ax)
+    cbar.set_label(cbar_title)
+
+    # Adjust axis properties
+    ax.spines['top'].set_linewidth(edge_width)  # Remove top spine 
+    ax.spines['right'].set_linewidth(edge_width)  # Remove right spine
+    ax.spines['left'].set_linewidth(edge_width)  # Adjust the thickness as desired
+    ax.spines['bottom'].set_linewidth(edge_width)  # Adjust the thickness as desired
+    ax.set_xlim(-0.5, len(corr_mat.columns) - 0.5)
+    ax.set_ylim(len(corr_mat.columns) - 0.5, -0.5)  # Reverse y-axis to match heatmap layout
+    ax.grid(False)
+
+    axes[1].axis('off')  # Hide second axis
+
+    # Return figure
+    return fig
+
+
+# Function to calculate correlation matrix for mixed data types
+def correlation_matrix_mixed_data(df, corr_method='pearson'):
+    # Get nominal and binary columns
+    binary_cols = [col for col in df.columns if (df[col].nunique() == 2) & (df[col].dtype in ['object', 'bool', 'category'])]
+    nominal_cols = [col for col in df.select_dtypes(include=['object', 'category']).columns if col not in binary_cols]
+    numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns.tolist()
+    column_order = df.columns.tolist()
+
+    # Compute correlation matrix    
+    corr_mat = df.drop(columns=nominal_cols+binary_cols).corr(method=corr_method)
+
+    # Reorder correlation matrix
+    corr_mat = corr_mat.reindex(index=column_order, columns=column_order)
+
+    # Correct matrix for nominal columns
+    if nominal_cols:
+        # Cramer's V matrix
+        cramer_corr = cramers_v_matrix(df, nominal_cols, numeric_cols)
+        # Insert Cramér’s V results
+        for cat_col1 in cramer_corr.index:
+            for cat_col2 in cramer_corr.columns:
+                if not np.isnan(cramer_corr.loc[cat_col1, cat_col2]):
+                    corr_mat.loc[cat_col1, cat_col2] = cramer_corr.loc[cat_col1, cat_col2]
+                    corr_mat.loc[cat_col2, cat_col1] = cramer_corr.loc[cat_col1, cat_col2]
+        # Correlation Ratio
+        ratio_corr = categorical_numeric_correlation(df, nominal_cols, numeric_cols)
+        # Insert Correlation Ratio results
+        for col1 in ratio_corr.index:
+            for col2 in ratio_corr.columns:
+                if not np.isnan(ratio_corr.loc[col1, col2]):
+                    # print(col1, col2, ratio_corr.loc[col1, col2])
+                    corr_mat.loc[col1, col2] = ratio_corr.loc[col1, col2]
+                    corr_mat.loc[col2, col1] = ratio_corr.loc[col1, col2]
+    
+    # Correct matrix for binary columns
+    if binary_cols:
+        pb_corr = point_biserial_matrix(df, binary_cols, numeric_cols)        
+        # Insert Point-Biserial results
+        for bin_col in pb_corr.index:
+            for num_col in pb_corr.columns:
+                if not np.isnan(pb_corr.loc[bin_col, num_col]):
+                    corr_mat.loc[bin_col, num_col] = pb_corr.loc[bin_col, num_col]
+                    corr_mat.loc[num_col, bin_col] = pb_corr.loc[bin_col, num_col]
+
+    return corr_mat
+
+
+# Point-Biserial Correlation: Binary vs. Numeric
+def point_biserial_matrix(df, binary_cols, numeric_cols):
+    pb_corr = pd.DataFrame(index=binary_cols, columns=numeric_cols)
+    for bin_col in binary_cols:
+        if df[bin_col].dtype == object:  # If binary column is categorical (e.g., "Yes"/"No")
+            df[bin_col] = df[bin_col].astype('category').cat.codes  # Convert to 0/1
+        for num_col in numeric_cols:
+            if df[num_col].dtype == object:  # Ensure numerical columns are numeric
+                df[num_col] = pd.to_numeric(df[num_col], errors='coerce')  # Convert, setting errors to NaN
+            
+            # Check if column is still valid for correlation
+            if df[bin_col].nunique() == 1 or df[num_col].nunique() == 1:  # Avoid correlation errors
+                pb_corr.loc[bin_col, num_col] = np.nan
+            else:
+                corr, _ = pointbiserialr(df[bin_col], df[num_col])
+                pb_corr.loc[bin_col, num_col] = corr
+    return pb_corr
+
+
+# Cramer's V: Categorical vs. Categorical
+def cramers_v_matrix(df, cat_cols, num_cols):
+    cramer_corr = pd.DataFrame(index=cat_cols, columns=cat_cols, dtype=float)
+
+    for cat_col1 in cat_cols:
+        for cat_col2 in cat_cols:
+            if cat_col1 != cat_col2:
+                # Compute confusion matrix
+                confusion_matrix = pd.crosstab(df[cat_col1], df[cat_col2])
+                # Compute Chi-Square statistic
+                chi2, p, dof, expected = chi2_contingency(confusion_matrix)
+                # Compute Cramér’s V
+                n = confusion_matrix.sum().sum()
+                r, k = confusion_matrix.shape
+                min_dim = min(r - 1, k - 1)  # Adjusting for degrees of freedom
+                if min_dim == 0:  # Prevent division by zero
+                    cramer_corr.loc[cat_col1, cat_col2] = np.nan
+                else:
+                    cramer_corr.loc[cat_col1, cat_col2] = np.sqrt(chi2 / (n * min_dim))
+            else:
+                cramer_corr.loc[cat_col1, cat_col2] = 1  # Perfect correlation with itself
+
+    return cramer_corr
+
+
+# Correlation Ratio η²: Categorical vs. Numeric 
+def categorical_numeric_correlation(df, cat_cols, num_cols):
+    ratio_corr = pd.DataFrame(index=cat_cols+num_cols, columns=cat_cols+num_cols, dtype=float)
+
+    for cat_col in cat_cols:
+        for num_col in num_cols:
+            ratio_corr.loc[cat_col, num_col] = correlation_ratio(df[cat_col], df[num_col])
+            ratio_corr.loc[num_col, cat_col] = ratio_corr.loc[cat_col, num_col]
+    
+    return ratio_corr
+
+
+def correlation_ratio(categories, numeric):
+    """Computes the correlation ratio (η²) for categorical-numeric association."""
+    groups = [numeric[categories == cat] for cat in np.unique(categories)]
+    total_var = np.var(numeric, ddof=1)
+    group_means = np.array([np.mean(group) for group in groups])
+    group_sizes = np.array([len(group) for group in groups])
+    weighted_var = np.sum(group_sizes * (group_means - np.mean(numeric)) ** 2) / np.sum(group_sizes)
+    return np.sqrt(weighted_var / total_var) if total_var > 0 else 0
+
+
+def correlation_matrix_transformed_data(df, preprocessor, corr_method='pearson', drop_cols=[], cat_cols=[], ord_cols=[]):
+    orig_column_order = df.drop(columns=drop_cols).columns.tolist()
+    # Transform data
+    transformed_df = preprocessor.transform(df)
+    # Define 'column' order in np.array after preprocessing (1. numeric, 2. ordinal, 3. categorical)
+    ord_var_names = df.columns[(df.columns.isin(ord_cols)) & (~df.columns.isin(drop_cols))].tolist()
+    cat_var_names = df.columns[(df.columns.isin(cat_cols)) & (~df.columns.isin(drop_cols))].tolist()
+    num_var_names = df.columns[(~df.columns.isin(cat_var_names)) & (~df.columns.isin(ord_var_names)) & (~df.columns.isin(drop_cols))].tolist()
+    new_column_order = num_var_names
+    new_column_order.extend(ord_var_names)
+    new_column_order.extend(cat_var_names)
+    # Add re-ordered column names to dataframe
+    transformed_df = pd.DataFrame(transformed_df, columns=new_column_order)
+    # Calculate correlation matrix of transformed data
+    corr_mat = transformed_df.corr(method=corr_method)
+    # Reindex correlation matrix
+    corr_mat = corr_mat.reindex(index=orig_column_order, columns=orig_column_order)
+    return corr_mat
