@@ -714,7 +714,7 @@ else:
     st.write("Geen data beschikbaar")
 
 
-@st.cache_data(ttl=600, max_entries=50)  # Cache expires after 10 minutes, keeps last 50 results
+@st.cache_data
 def get_parallel_coordinates(df, target):
     data_hip = df.copy()
     data_hip = data_hip.drop(columns=['KRW type', 'Waterschap naam', 'OWL naam'], errors='ignore')
@@ -725,7 +725,8 @@ def get_parallel_coordinates(df, target):
         categories = ['Expert'] + data_hip['Waterschap'].unique().tolist()
         data_hip['Waterschap'] = pd.Categorical(data_hip['Waterschap'], categories=categories, ordered=True)
     data_hip = data_hip.sort_values('Waterschap', ascending=False)
-    data_hip = pd.concat([data_experts, data_hip], axis='index', ignore_index=True).reset_index(drop=True)
+    if 'Expert' in data_hip['Waterschap'].unique():
+        data_hip = pd.concat([data_experts, data_hip], axis='index', ignore_index=True).reset_index(drop=True)
     xp = hip.Experiment().from_dataframe(data_hip)
     return xp
 
