@@ -66,6 +66,7 @@ from krw_utils import YeoJohnsonTargetTransformer, LogTargetTransformer, Log1pTr
 from krw_utils import drop_columns_by_name, safe_convert_to_str, signed_log1p_transform, inv_signed_log1p_transform, monotonic_constraints
 from krw_utils import get_regression_metrics, custom_permutation_importance
 from krw_utils import shap_dependence_plots_with_target_as_legend, plot_model_performance
+from krw_utils import plot_correlation_heatmap, correlation_matrix_mixed_data, correlation_matrix_transformed_data
 
 
 # Suppress specific warnings
@@ -149,6 +150,8 @@ if 'fig_intervals' not in st.session_state:
     st.session_state.fig_intervals = None
 if 'fig_causal' not in st.session_state:
     st.session_state.fig_causal = None
+if 'fig_correlation' not in st.session_state:
+    st.session_state.fig_correlation = None
 # Feature selection
 if 'selected_features' not in st.session_state:
     st.session_state.selected_features = []
@@ -700,6 +703,7 @@ if (st.session_state.new_dataset) | (st.session_state.new_settings):
     st.session_state.fig_dependence = None
     st.session_state.fig_intervals = None
     st.session_state.fig_causal = None
+    st.session_state.fig_correlation = None
 
 
 # Display dataset
@@ -1353,6 +1357,37 @@ if st.session_state.render_figures:
         # Add conformal result to session state
         st.session_state.fig_intervals = fig
 
+        # Plot feature correlation
+        correlation_on_untransformed_data = True
+        corr_method = 'pearson'
+        # Calculate correlation matrix
+        corr_df = X.copy()
+        if correlation_on_untransformed_data:
+            corr_mat = correlation_matrix_mixed_data(
+                corr_df.drop(columns=columns_not_in_model), 
+                corr_method=corr_method
+            )
+        else:
+            corr_mat = correlation_matrix_transformed_data(
+                corr_df, 
+                preprocessor=model.named_steps['preprocessor'], 
+                corr_method=corr_method, 
+                drop_cols=columns_not_in_model, 
+                cat_cols=categorical_columns, 
+                ord_cols=ordinal_columns,
+            )
+        # Correlation heatmap
+        alpha = 0.8
+        edge_width = 0.4
+        fig = plot_correlation_heatmap(
+            corr_mat, 
+            alpha=alpha, 
+            edge_width=edge_width,
+            cbar_title='Correlatie',
+        )
+        # Add correlation heatmap to session state
+        st.session_state.fig_correlation = fig
+
         # Plot causal graph
         fig, ax = plt.subplots(figsize=(12,6), ncols=2)
         ax[0] = plot_causal_graph(
@@ -1511,6 +1546,21 @@ if st.session_state.fig_intervals is not None:
         unsafe_allow_html=True
     )
     st.pyplot(st.session_state.fig_intervals)
+
+# Display correlation heatmap with markdown
+if st.session_state.fig_correlation is not None:
+    st.write("")
+    st.write("")
+    st.write("### Correlaties tussen stuurvariabelen")
+    st.markdown(
+        "<p style='font-size:14px;'>Correlaties laten zien welke stuurvariabelen vergelijkbaar gedrag vertonen. Een correlatie geeft de sterkte en richting van een lineaire relatie tussen twee variabelen weer. De waarde van de correlatiecoëfficiënt varieert tussen -1 en 1, waarbij -1 een perfecte negatieve correlatie aanduidt, 1 een perfecte positieve correlatie, en 0 geen verband. Blauwe tinten in de figuur duiden op positieve correlaties, terwijl rode tinten negatieve correlaties aangeven. Hoe groter een vierkant en hoe intenser de kleur van het vierkant, hoe sterker de correlatie.</p>",
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        "<p style='font-size:14px;'>De figuur laat zien welke variabelen mogelijk samenhangen en of ze in dezelfde of tegenovergestelde richting veranderen. Dit helpt bij het identificeren van patronen en potentiële onderliggende relaties. Maar correlatie is nog geen geen causaliteit; een sterke correlatie betekent niet noodzakelijk dat de ene variabele de andere beïnvloedt.</p>",
+        unsafe_allow_html=True
+    )
+    st.pyplot(st.session_state.fig_correlation)
 
 # Display causal graphs with markdown
 if st.session_state.fig_causal is not None:
