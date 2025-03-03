@@ -217,7 +217,7 @@ scaler_type = 'standard'
 model_types = {
     'Random Forest':'RF',
     'LGBM - Gradient Boosting':'LGBM',
-    # 'XGB - Gradient Boosting':'XGB',
+    'XGB - Gradient Boosting':'XGB',
     'Extra Trees':'XT',
     'K-nearest Neighbors':'KNN'
     # 'Linear Regression':'LR',
@@ -226,8 +226,8 @@ model_types = {
 models = {
     "RF": {'model':RandomForestRegressor(n_estimators=30, max_depth=10, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Random Forest Regressor'},
     "LGBM": {'model':LGBMRegressor(objective='regression', max_depth=10, verbose=-1), 'scaler':scaler_type, 'name':'Gradient Boosting Regressor'},	
-    "XGB": {'model':XGBRegressor(objective='reg:squarederror', max_depth=10, min_child_weight=20), 'scaler':scaler_type, 'name':'XGBoost Regressor'},
-    "XT": {'model':ExtraTreesRegressor(n_estimators=30, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Extra Trees Regressor'},
+    "XGB": {'model':XGBRegressor(objective='reg:squarederror', max_depth=10, min_child_weight=20, njobs=1, tree_method='hist'), 'scaler':scaler_type, 'name':'XGBoost Regressor'},
+     "XT": {'model':ExtraTreesRegressor(n_estimators=30, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Extra Trees Regressor'},
     "KNN": {'model':KNeighborsRegressor(), 'scaler':'standard', 'name':'K-nearest Neighbors Regressor'},
     "LR": {'model':LinearRegression(), 'scaler':'standard', 'name':'Linear Regression'},
 }
@@ -235,7 +235,7 @@ models = {
 cqr_models = {
     "RF": {'model':RandomForestQuantileRegressor(n_estimators=30, max_depth=10, min_samples_leaf=3, q=0.5), 'scaler':scaler_type, 'name':'Random Forest Quantile Regressor'},
     "LGBM": {'model':LGBMRegressor(objective='quantile', max_depth=10,  alpha=0.5, verbose=-1), 'scaler':scaler_type, 'name':'Gradient Boosting Quantile Regressor'},
-    "XGB": {'model':XGBRegressor(objective='reg:quantileerror', max_depth=10, min_child_weight=20, quantile_alpha=0.5), 'scaler':scaler_type, 'name':'XGBoost Quantile Regressor'},
+    "XGB": {'model':XGBRegressor(objective='reg:quantileerror', max_depth=10, min_child_weight=20, quantile_alpha=0.5, njobs=1, tree_method='hist'), 'scaler':scaler_type, 'name':'XGBoost Quantile Regressor'},
     "XT": {'model':ExtraTreesQuantileRegressor(n_estimators=30, min_samples_leaf=3, q=0.5), 'scaler':scaler_type, 'name':'Extra Trees Quantile Regressor'},
     "KNN": {'model':KNeighborsQuantileRegressor(q=0.5), 'scaler':'standard', 'name':'K-nearest Neighbors Quantile Regressor'},
     "LR": {'model':QuantileRegressor(alpha=1., quantile=0.5), 'scaler':'standard', 'name':'Linear Quantile Regressor'},
