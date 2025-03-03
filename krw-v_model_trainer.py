@@ -216,18 +216,16 @@ scaler_type = 'standard'
 
 model_types = {
     'Random Forest':'RF',
-    'LGBM - Gradient Boosting':'LGBM',
-    'XGB - Gradient Boosting':'XGB',
+    'Gradient Boosting':'LGBM',
     'Extra Trees':'XT',
     'K-nearest Neighbors':'KNN'
-    # 'Linear Regression':'LR',
 }
 
 models = {
     "RF": {'model':RandomForestRegressor(n_estimators=30, max_depth=10, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Random Forest Regressor'},
     "LGBM": {'model':LGBMRegressor(objective='regression', max_depth=10, verbose=-1), 'scaler':scaler_type, 'name':'Gradient Boosting Regressor'},	
     "XGB": {'model':XGBRegressor(objective='reg:squarederror', max_depth=10, min_child_weight=20, njobs=1, tree_method='hist'), 'scaler':scaler_type, 'name':'XGBoost Regressor'},
-     "XT": {'model':ExtraTreesRegressor(n_estimators=30, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Extra Trees Regressor'},
+    "XT": {'model':ExtraTreesRegressor(n_estimators=30, min_samples_leaf=3), 'scaler':scaler_type, 'name':'Extra Trees Regressor'},
     "KNN": {'model':KNeighborsRegressor(), 'scaler':'standard', 'name':'K-nearest Neighbors Regressor'},
     "LR": {'model':LinearRegression(), 'scaler':'standard', 'name':'Linear Regression'},
 }
