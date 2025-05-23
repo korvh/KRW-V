@@ -1194,6 +1194,7 @@ if st.session_state.fit_model:
         # Get causal order and adjacency matrix
         causal_order = model_dling.causal_order_
         adjmatrix_dling = model_dling.adjacency_matrix_
+        print(pd.DataFrame(adjmatrix_dling, index=df_causal.columns, columns=df_causal.columns))
         # Create directed graph using networkx
         G_dling = nx.DiGraph()
         # Add edges based on the adjacency matrix
@@ -1213,7 +1214,7 @@ if st.session_state.fit_model:
         bk = initialize_graph_for_background_knowledge(df_causal, forbidden_links=impossible_links, required_links=predefined_links)
         # Run FCI Algorithm with background knowledge
         G_fci, _ = fci(df_causal.values, alpha=alpha_fci, indep_test=indep_test, background_knowledge=bk, kernelX=kernelX, kernelY=kernelY, verbose=0, show_progress=False)
-
+        print(pd.DataFrame(G_fci.graph, index=df_causal.columns, columns=df_causal.columns))
 
     # Show message when model is trained
     st.success('Model succesvol getraind')

@@ -43,7 +43,7 @@ jsonschema-specifications
 kiwisolver
 lightgbm
 llvmlite==0.43.0
-MAPIE
+MAPIE==0.9
 markdown-it-py
 MarkupSafe
 matplotlib==3.9.4
